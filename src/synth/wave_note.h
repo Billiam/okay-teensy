@@ -6,13 +6,15 @@
 class WaveNote
 {
   public:
-    WaveNote(AudioSynthWaveform waveform, AudioEffectEnvelope envelope);
+    WaveNote(AudioSynthWaveform &waveform, AudioEffectEnvelope &envelope);
     void play();
     void stop();
     void setWave(short wave);
+    void setFrequency(float freq);
+    bool playing();
   private:
-    AudioEffectEnvelope _envelope;
-    AudioSynthWaveform _waveform;
+    AudioEffectEnvelope &_envelope;
+    AudioSynthWaveform &_waveform;
 };
 
 #endif
