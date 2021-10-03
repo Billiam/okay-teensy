@@ -1,14 +1,16 @@
 #ifndef DebounceInt_h_
 #define DebounceInt_h_
 
+#include <cstdint>
+
+#include <Arduino.h>
 class DebounceInt
 {
   public:
-    DebounceInt(int delay = 25);
+    explicit DebounceInt(int delay = 25);
 
     void setValue(int val);
-    void update(int time);
-
+    void update(uint32_t time);
     bool changed();
     int getValue();
 
