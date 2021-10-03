@@ -1,4 +1,5 @@
 #include "keyboard.h"
+#include <Snooze.h>
 
 Keyboard::Keyboard(std::array<uint8_t, OkayConstants::keyCount> &pins, Synth &synth)
 : _pins(pins), _synth(synth) {}

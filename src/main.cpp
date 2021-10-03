@@ -196,9 +196,12 @@ AudioConnection          patchCord89(mixer16, 0, i2s1, 1);
 // GUItool: end automatically generated code
 
 #include <array>
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <Bounce2.h>
+#include <Metro.h>
+#include <Snooze.h>
 
 #include "keyboard.h"
 #include "constant.h"
@@ -213,8 +216,12 @@ AudioConnection          patchCord89(mixer16, 0, i2s1, 1);
 #include "samples/Celesta_samples.h"
 #include "samples/Trombone_samples.h"
 
+SnoozeDigital digital;
+SnoozeUSBSerial serial;
+SnoozeSPI spi;
+SnoozeBlock config(digital, serial, spi);
+
 //Record audio peaks
-//#include <Metro.h>
 //AudioAnalyzePeak         peak1;
 //AudioConnection patchCord90(mixer16, peak1);
 //Metro peakLog = Metro(1000);
@@ -333,7 +340,23 @@ void setup() {
 }
 
 uint16_t lastMemory = 0;
+bool active = false;
+Metro sleepInterval = Metro(30000);
 
+bool anyActivity()
+{
+  if (std::any_of(keyPins.begin(), keyPins.end(), [](uint8_t pin) {
+      return digitalRead(pin) == LOW;
+  })) {
+    return true;
+  }
+
+  if (instrumentSwitch.changed() || octaveSwitch.changed()) {
+    return true;
+  }
+
+  return false;
+}
 void loop() {
   uint32_t time = millis();
 
@@ -355,6 +378,23 @@ void loop() {
   // }
 
   keyboard.update(time);
+
+  if (!active) {
+    if (anyActivity()) {
+      Serial.println("Got activity");
+      active = true;
+    }
+  }
+  if (sleepInterval.check()) {
+    Serial.println("Active check");
+
+    if (!active) {
+      Serial.println("Would sleep here");
+      delay(100);
+      int who = Snooze.hibernate( config );
+    }
+    active = false;
+  }
 
   // debug audio memory usage
 //  uint16_t maxMemory = AudioMemoryUsageMax();
