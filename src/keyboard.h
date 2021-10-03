@@ -1,15 +1,22 @@
-#ifndef keyboard_h_
-#define keyboard_h_
+#ifndef Keyboard_h_
+#define Keyboard_h_
+
+#include <array>
+#include <cstdint>
+#include <Bounce2.h>
+#include "synth/synth.h"
+#include "constant.h"
 
 class Keyboard
 {
   public:
-    Keyboard(unsigned uint8_t pins[], Synth syth);
-    void update(int time);
+    Keyboard(std::array<uint8_t, OkayConstants::keyCount> &pins,  Synth &synth);
+    void update(uint32_t time);
+    void begin();
   private:
-    //uint8_t _pins;
-    Button buttons;
-    Synth synth;
+    std::array<uint8_t, OkayConstants::keyCount> &_pins;
+    std::array<Bounce2::Button, OkayConstants::keyCount> _buttons;
+    Synth &_synth;
 };
 
 #endif
