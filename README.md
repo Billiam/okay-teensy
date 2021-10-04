@@ -8,9 +8,9 @@ Teensy 4.1 + Audio Adapter Board build for the [Oskitone Okay 2](https://www.osk
 * Waveform instruments
 * Instrument selector
 * Amp auto-off
+* Octave selector
 
 ## Planned features
 
 * Hibernation
-* Octave selector
 * Headphone audio toggle

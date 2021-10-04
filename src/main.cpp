@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <Bounce2.h>
+#include <Metro.h>
 
 #include "synth/synth_gui.h"
 #include "keyboard.h"
@@ -18,7 +19,6 @@
 #include "samples/Trombone_samples.h"
 
 //Record audio peaks
-//#include <Metro.h>
 //AudioAnalyzePeak         peak1;
 //AudioConnection patchCord90(mixer16, peak1);
 //Metro peakLog = Metro(1000);
@@ -104,6 +104,7 @@ Synth synth = Synth(instrumentList);
 Keyboard keyboard = Keyboard(keyPins, synth);
 
 Bounce2::Button debugBounce = Bounce2::Button();
+Metro throttledLog = Metro(200);
 
 void setup() {
   // Amp shutdown on launch
@@ -129,9 +130,7 @@ void setup() {
   // debugBounce.interval(25);
 
   instrumentSwitch.attach(VOICE_SELECTOR);
-  // temporary disabled until octave selector configured
-//  octaveSwitch.attach(OCTAVE_SELECTOR);
-  synth.setOctave(3);
+  octaveSwitch.attach(OCTAVE_SELECTOR);
 
   // No effect
   // sgtl5000_1.audioPreProcessorEnable();
@@ -152,7 +151,7 @@ void loop() {
   }
   octaveSwitch.update(time);
   if (octaveSwitch.changed()) {
-    synth.setOctave(instrumentSwitch.getValue());
+    synth.setOctave(octaveSwitch.getValue());
   }
   // debugBounce.update();
   // if (debugBounce.pressed()) {
