@@ -1,5 +1,20 @@
-keys = 24
+keys = 25
 patch = 0
+mixer = 0
+
+l1_mixers = ((keys * 2)/4.0).ceil
+l2_mixers = (l1_mixers/4.0).ceil
+l3_mixers = (l2_mixers/4.0).ceil
+
+mixer_conn = 0
+
+puts "#include <Audio.h>"
+puts "#include <Wire.h>"
+puts "#include <SPI.h>"
+puts "#include <SD.h>"
+puts "#include <SerialFlash.h>"
+puts
+puts "// GUItool: begin automatically generated code"
 
 keys.times do |i|
   puts "AudioSynthWaveform       waveform#{i + 1};      //xy=100,#{i * 50}"
@@ -16,61 +31,81 @@ keys.times do |i|
 end
 
 puts
-(keys / 2).times do |i|
-  n = i + 1
-  puts "AudioMixer4              mixer#{n};         //xy=450,#{i * 200 + 75}"
+l1_mixers.times do |i|
+  puts "AudioMixer4              mixer#{mixer+=1};         //xy=450,#{i * 200 + 75}"
 end
 
 puts
-(keys / 8).times do |i|
-  n = i + 1 + keys / 2
-  puts "AudioMixer4              mixer#{n};         //xy=650,#{i * 800 + 375}"
+l2_mixers.times do |i|
+  puts "AudioMixer4              mixer#{mixer+=1};         //xy=650,#{i * 800 + 375}"
 end
 
 puts
-puts "AudioMixer4              mixer#{keys/2 + keys/8 + 1};         //xy=850,#{keys * 50 - 25}"
+l3_mixers.times do |i|
+  puts "AudioMixer4              mixer#{mixer+=1};         //xy=850,#{keys * 50 - 25}"
+end
 
 puts
+# Master mixer
+puts "AudioMixer4              volume_control;         //xy=1050,#{keys * 50 - 25}"
+
+puts
+# Connect waveforms to envelopes
 keys.times do |i|
   n = i + 1
   puts "AudioConnection          patchCord#{patch+=1}(waveform#{n}, envelope#{n});"
 end
 
-(keys / 4).times do |i|
-  n = i + 1
-  4.times do |j|
-    env = 1 + i * 4 + j
-    puts "AudioConnection          patchCord#{patch+=1}(envelope#{env}, 0, mixer#{n}, #{j});"
-  end
+puts
+# connect envelopes to l1 mixers
+keys.times do |i|
+  m = (mixer_conn / 4) + 1
+  j = mixer_conn % 4
+  mixer_conn += 1
+
+  puts "AudioConnection          patchCord#{patch+=1}(envelope#{i+1}, 0, mixer#{m}, #{j});"
 end
 
 puts
-(keys / 4).times do |i|
-  n = i + 7
-  4.times do |j|
-    wt = 1 + i * 4 + j
-    puts "AudioConnection          patchCord#{patch+=1}(wavetable#{wt}, 0, mixer#{n}, #{j});"
-  end
+# connect wavetables to l1 mixers
+keys.times do |i|
+  m = (mixer_conn / 4) + 1
+  j = mixer_conn % 4
+  mixer_conn += 1
+
+  puts "AudioConnection          patchCord#{patch+=1}(wavetable#{i+1}, 0, mixer#{m}, #{j});"
+end
+
+
+puts
+# connect l1 mixers tol2 mixers
+l1_mixers.times do |i|
+  mixer_out = i + 1
+  mixer_in = l1_mixers + i/4 + 1
+  j = i % 4
+
+  puts "AudioConnection          patchCord#{patch+=1}(mixer#{mixer_out}, 0, mixer#{mixer_in}, #{j});"
 end
 
 puts
-(keys / 8).times do |i|
-  mixer_out = 1 + i + keys / 2
-  4.times do |j|
-    mixer_in = 1 + i * 4 + j
-    puts "AudioConnection          patchCord#{patch+=1}(mixer#{mixer_in}, 0, mixer#{mixer_out}, #{j});"
-  end
+# connect l2 mixers to l3 mixers
+l2_mixers.times do |i|
+  mixer_out = l1_mixers + i + 1
+  mixer_in = l1_mixers + l2_mixers + i/4 + 1
+  j = i % 4
+
+  puts "AudioConnection          patchCord#{patch+=1}(mixer#{mixer_out}, 0, mixer#{mixer_in}, #{j});"
 end
 
-mixer_out = keys/2 + keys/8 + 1
-(keys / 8).times do |i|
-  mixer_in = keys/2 + 1 + i
-  puts "AudioConnection          patchCord#{patch+=1}(mixer#{mixer_in}, 0, mixer#{mixer_out}, #{i});"
-end
+
+last_mixer = l1_mixers + l2_mixers + 1
+puts "AudioConnection          patchCord#{patch+=1}(mixer#{last_mixer}, 0, volume_control, 0);"
 
 puts
-puts "AudioControlSGTL5000     sgtl5000_1;     //xy=1050,#{keys * 50 + 75}"
-puts "AudioOutputI2S           i2s1;           //xy=1050,#{keys * 50 - 25}"
+puts "AudioControlSGTL5000     sgtl5000_1;     //xy=1250,#{keys * 50 + 75}"
+puts "AudioOutputI2S           i2s1;           //xy=1250,#{keys * 50 - 25}"
 2.times do |i|
-  puts "AudioConnection          patchCord#{patch+=1}(mixer#{mixer_out}, 0, i2s1, #{i});"
+  puts "AudioConnection          patchCord#{patch+=1}(volume_control, 0, i2s1, #{i});"
 end
+puts
+puts "// Guitool: End automatically generated code"

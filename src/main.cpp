@@ -47,7 +47,8 @@ std::array<AudioSynthWavetable*, OkayConstants::keyCount> tableGenerators {{
   &wavetable21,
   &wavetable22,
   &wavetable23,
-  &wavetable24
+  &wavetable24,
+  &wavetable25
 }};
 
 std::array<std::shared_ptr<WaveNote>, OkayConstants::keyCount> waveGenerators {{
@@ -74,12 +75,16 @@ std::array<std::shared_ptr<WaveNote>, OkayConstants::keyCount> waveGenerators {{
   std::make_shared<WaveNote>(WaveNote(waveform21, envelope21)),
   std::make_shared<WaveNote>(WaveNote(waveform22, envelope22)),
   std::make_shared<WaveNote>(WaveNote(waveform23, envelope23)),
-  std::make_shared<WaveNote>(WaveNote(waveform24, envelope24))
+  std::make_shared<WaveNote>(WaveNote(waveform24, envelope24)),
+  std::make_shared<WaveNote>(WaveNote(waveform25, envelope25))
 }};
 
-#define VOICE_SELECTOR 41
-#define OCTAVE_SELECTOR 40
-#define AMP_CONTROL 33
+#define VOICE_SELECTOR 27
+#define OCTAVE_SELECTOR 26
+#define VOLUME 25
+#define HEADPHONE 24
+
+#define AMP_CONTROL 11
 
 AnalogBouncer instrumentSwitch = AnalogBouncer(25, 8, 395);
 AnalogBouncer octaveSwitch = AnalogBouncer(25, 8, 395);
@@ -96,8 +101,8 @@ std::array<std::shared_ptr<Instrument>, OkayConstants::instrumentCount> instrume
 }};
 
 std::array<uint8_t, OkayConstants::keyCount> keyPins {{
-  0, 1, 2, 3, 4, 5, 9, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-  22, 17, 16, 14, 37, 36, 35, 34
+  33, 34, 35, 36, 37, 38, 39, 40, 41, 14, 16, 17, 22,
+  32, 31, 30, 29, 0, 9, 28, 5, 4, 3, 2, 1
 }};
 
 Synth synth = Synth(instrumentList);
@@ -108,8 +113,8 @@ Metro throttledLog = Metro(200);
 
 void setup() {
   // Amp shutdown on launch
-  pinMode(AMP_CONTROL, OUTPUT);
-  digitalWrite(AMP_CONTROL, LOW);
+  // pinMode(AMP_CONTROL, OUTPUT);
+  // digitalWrite(AMP_CONTROL, LOW);
 
   Serial.begin(9600);
   AudioMemory(30);
@@ -131,13 +136,16 @@ void setup() {
 
   instrumentSwitch.attach(VOICE_SELECTOR);
   octaveSwitch.attach(OCTAVE_SELECTOR);
+  synth.setOctave(4);
+  
+  pinMode(VOLUME, INPUT_PULLDOWN);
 
   // No effect
   // sgtl5000_1.audioPreProcessorEnable();
   // sgtl5000_1.autoVolumeControl(1,1,0,-36,0.5,0.75);
 
   // enable amplifier
-  digitalWrite(AMP_CONTROL, HIGH);
+  // digitalWrite(AMP_CONTROL, HIGH);
 }
 
 uint16_t lastMemory = 0;
@@ -149,10 +157,14 @@ void loop() {
   if (instrumentSwitch.changed()) {
     synth.setInstrument(instrumentSwitch.getValue());
   }
-  octaveSwitch.update(time);
-  if (octaveSwitch.changed()) {
-    synth.setOctave(octaveSwitch.getValue());
-  }
+  // octaveSwitch.update(time);
+  // if (octaveSwitch.changed()) {
+  //   synth.setOctave(octaveSwitch.getValue());
+  // }
+  volume_control.gain(0, (1024 - analogRead(VOLUME)) / 1024.0);
+
+  
+  
   // debugBounce.update();
   // if (debugBounce.pressed()) {
   //   sgtl5000_1.autoVolumeEnable();
@@ -163,7 +175,6 @@ void loop() {
   // }
 
   keyboard.update(time);
-
   // debug audio memory usage
 //  uint16_t maxMemory = AudioMemoryUsageMax();
 //  if (maxMemory != lastMemory) {

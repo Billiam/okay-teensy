@@ -3,7 +3,7 @@
 
 namespace OkayConstants
 {
-    const int keyCount = 24;
+    const int keyCount = 25;
     const int instrumentCount = 8;
 }
 #endif
