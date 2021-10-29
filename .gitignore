@@ -1,3 +1,5 @@
 .pio
 .idea
 .vscode
+cmake-build-teensy41
+.vscode
